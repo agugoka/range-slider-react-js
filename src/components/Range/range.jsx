@@ -4,58 +4,46 @@ import { debounce } from "lodash";
 const Range = ({ options }) => {
   const optionsRange = options[0] || null;
 
-  const values = [1.99, 5.99, 10.99, 30.99, 50.99, 70.99];
-
+  const [reload, setReload] = useState(false);
   const [step, setStep] = useState({
     min: 0,
-    max: Number(values.length - 1),
+    max: 10,
   });
-
   const [state, setState] = useState({
     sliderWidth: 0,
     offsetSliderWidht: 0,
-    // min: 1,
-    // max: 100,
     minValueBetween: 0,
-
-    min: Number(values[0]),
-    currentMin: Number(values[0]),
-    inputMin: Number(values[0]),
-    max: Number(values[values.length - 1]),
-    currentMax: Number(values[values.length - 1]),
-    inputMax: Number(values[values.length - 1]),
-    isFixedValues: true,
+    min: 1,
+    values: [1, 100],
+    currentMin: 1,
+    inputMin: 1,
+    max: 100,
+    currentMax: 100,
+    inputMax: 100,
   });
 
   useEffect(() => {
-    console.log("STATE currentMin", state.currentMin);
-    console.log("STATE currentMax", state.currentMax);
-    console.log("STep min", step.min);
-    console.log("STep max", step.max);
-  }, [state, step]);
-
-  // NORMAL RANGE STATE
-  // const [state, setState] = useState({
-  //   sliderWidth: 0,
-  //   offsetSliderWidht: 0,
-  //   min: 1,
-  //   max: 100,
-  //   minValueBetween: 5,
-
-  //   currentMin: 1,
-  //   inputMin: 1,
-
-  //   currentMax: 100,
-  //   inputMax: 100,
-  // });
-
-  const sliderRef = useRef(null);
-  const inputMinRef = useRef(null);
-  const inputMaxRef = useRef(null);
-  const minValueRef = useRef(null);
-  const maxValueRef = useRef(null);
-  const minValueDragRef = useRef(null);
-  const maxValueDragRef = useRef(null);
+    const isFixedValues = optionsRange?.values.length > 2;
+    setStep({ ...step, min: 0, max: optionsRange?.values.length - 1 });
+    setState({
+      ...state,
+      values: optionsRange?.values,
+      min: optionsRange?.values[0],
+      currentMin: optionsRange?.values[0],
+      inputMin: optionsRange?.values[0],
+      max: isFixedValues
+        ? optionsRange?.values[optionsRange?.values.length - 1]
+        : optionsRange?.values[1],
+      currentMax: isFixedValues
+        ? optionsRange?.values[optionsRange?.values.length - 1]
+        : optionsRange?.values[1],
+      inputMax: isFixedValues
+        ? optionsRange?.values[optionsRange?.values.length - 1]
+        : optionsRange?.values[1],
+      minValueBetween: optionsRange?.minValueBetween,
+    });
+    setReload(true);
+  }, [options]);
 
   useEffect(() => {
     minValueRef.current.style.width =
@@ -68,6 +56,14 @@ const Range = ({ options }) => {
       offsetSliderWidht: sliderRef?.current.offsetLeft,
     });
   }, []);
+
+  const sliderRef = useRef(null);
+  const inputMinRef = useRef(null);
+  const inputMaxRef = useRef(null);
+  const minValueRef = useRef(null);
+  const maxValueRef = useRef(null);
+  const minValueDragRef = useRef(null);
+  const maxValueDragRef = useRef(null);
 
   const onMouseMoveMin = (e) => {
     const dragedWidht = e.clientX - state.offsetSliderWidht;
@@ -92,53 +88,53 @@ const Range = ({ options }) => {
     let currentMin = Number(
       ((state.max * dragedWidhtInPercent) / 100).toFixed(2)
     );
-
-    console.log("currentMin", currentMin);
-
     const recursiveConditional = () => {
-      if (currentMin > values[nextStepMin] && currentMin < values[step.max]) {
+      if (
+        currentMin > state.values[nextStepMin] &&
+        currentMin < state.values[step.max]
+      ) {
         currentStepMin = nextStepMin;
         nextStepMin = Number(currentStepMin + 1);
         minValueRef.current.style.width =
-          (values[currentStepMin] * 100) / state.max + "%";
-        minValueRef.current.dataset.content = values[currentStepMin];
-        inputMinRef.current.value = values[currentStepMin];
+          (state.values[currentStepMin] * 100) / state.max + "%";
+        minValueRef.current.dataset.content = state.values[currentStepMin];
+        inputMinRef.current.value = state.values[currentStepMin];
         setStep({ ...step, min: currentStepMin });
         setState({
           ...state,
-          currentMin: values[currentStepMin],
-          inputMin: values[currentStepMin],
+          currentMin: state.values[currentStepMin],
+          inputMin: state.values[currentStepMin],
         });
         recursiveConditional();
       } else if (
-        currentMin < values[currentStepMin] &&
-        currentMin > values[0]
+        currentMin < state.values[currentStepMin] &&
+        currentMin > state.values[0]
       ) {
         currentStepMin = currentStepMin - 1;
         nextStepMin = Number(currentStepMin + 1);
         minValueRef.current.style.width =
-          (values[currentStepMin] * 100) / state.max + "%";
-        minValueRef.current.dataset.content = values[currentStepMin];
-        inputMinRef.current.value = values[currentStepMin];
+          (state.values[currentStepMin] * 100) / state.max + "%";
+        minValueRef.current.dataset.content = state.values[currentStepMin];
+        inputMinRef.current.value = state.values[currentStepMin];
         setStep({ ...step, min: currentStepMin });
         setState({
           ...state,
-          currentMin: values[currentStepMin],
-          inputMin: values[currentStepMin],
+          currentMin: state.values[currentStepMin],
+          inputMin: state.values[currentStepMin],
         });
         recursiveConditional();
-      } else if (currentMin < values[0]) {
+      } else if (currentMin < state.values[0]) {
         currentStepMin = 0;
         nextStepMin = Number(currentStepMin + 1);
         minValueRef.current.style.width =
-          (values[currentStepMin] * 100) / state.max + "%";
-        minValueRef.current.dataset.content = values[currentStepMin];
-        inputMinRef.current.value = values[currentStepMin];
+          (state.values[currentStepMin] * 100) / state.max + "%";
+        minValueRef.current.dataset.content = state.values[currentStepMin];
+        inputMinRef.current.value = state.values[currentStepMin];
         setStep({ ...step, min: currentStepMin });
         setState({
           ...state,
-          currentMin: values[currentStepMin],
-          inputMin: values[currentStepMin],
+          currentMin: state.values[currentStepMin],
+          inputMin: state.values[currentStepMin],
         });
       }
     };
@@ -172,53 +168,53 @@ const Range = ({ options }) => {
     let currentMax = Number(
       ((state.max * dragedWidhtInPercent) / 100).toFixed(2)
     );
-
-    console.log("currentMax", currentMax);
-
     const recursiveConditional = () => {
-      if (currentMax < values[nextStepMax] && currentMax > values[step.min]) {
+      if (
+        currentMax < state.values[nextStepMax] &&
+        currentMax > state.values[step.min]
+      ) {
         currentStepMax = nextStepMax;
         nextStepMax = currentStepMax - 1;
         maxValueRef.current.style.width =
-          (values[currentStepMax] * 100) / state.max + "%";
-        maxValueRef.current.dataset.content = values[currentStepMax];
-        inputMaxRef.current.value = values[currentStepMax];
+          (state.values[currentStepMax] * 100) / state.max + "%";
+        maxValueRef.current.dataset.content = state.values[currentStepMax];
+        inputMaxRef.current.value = state.values[currentStepMax];
         setStep({ ...step, max: currentStepMax });
         setState({
           ...state,
-          currentMax: values[currentStepMax],
-          inputMax: values[currentStepMax],
+          currentMax: state.values[currentStepMax],
+          inputMax: state.values[currentStepMax],
         });
         recursiveConditional();
       } else if (
-        currentMax > values[currentStepMax] &&
-        currentMax < values[values.length - 1]
+        currentMax > state.values[currentStepMax] &&
+        currentMax < state.values[state.values.length - 1]
       ) {
         currentStepMax = currentStepMax + 1;
         nextStepMax = currentStepMax + 1;
         maxValueRef.current.style.width =
-          (values[currentStepMax] * 100) / state.max + "%";
-        maxValueRef.current.dataset.content = values[currentStepMax];
-        inputMaxRef.current.value = values[currentStepMax];
+          (state.values[currentStepMax] * 100) / state.max + "%";
+        maxValueRef.current.dataset.content = state.values[currentStepMax];
+        inputMaxRef.current.value = state.values[currentStepMax];
         setStep({ ...step, max: currentStepMax });
         setState({
           ...state,
-          currentMax: values[currentStepMax],
-          inputMax: values[currentStepMax],
+          currentMax: state.values[currentStepMax],
+          inputMax: state.values[currentStepMax],
         });
         recursiveConditional();
-      } else if (currentMax > values[values.length - 1]) {
-        currentStepMax = values.length - 1;
+      } else if (currentMax > state.values[state.values.length - 1]) {
+        currentStepMax = state.values.length - 1;
         nextStepMax = currentStepMax - 1;
         maxValueRef.current.style.width =
-          (values[currentStepMax] * 100) / state.max + "%";
-        maxValueRef.current.dataset.content = values[currentStepMax];
-        inputMaxRef.current.value = values[currentStepMax];
+          (state.values[currentStepMax] * 100) / state.max + "%";
+        maxValueRef.current.dataset.content = state.values[currentStepMax];
+        inputMaxRef.current.value = state.values[currentStepMax];
         setStep({ ...step, max: currentStepMax });
         setState({
           ...state,
-          currentMax: values[currentStepMax],
-          inputMax: values[currentStepMax],
+          currentMax: state.values[currentStepMax],
+          inputMax: state.values[currentStepMax],
         });
       }
     };
@@ -226,52 +222,60 @@ const Range = ({ options }) => {
   };
 
   const onMouseUpMin = () => {
+    const isFixedValues = optionsRange?.values.length > 2;
+    inputMinRef.current.className = "";
     document.removeEventListener(
       "mousemove",
-      !state.isFixedValues ? onMouseMoveMin : onMouseMoveMinFixeds
+      !isFixedValues ? onMouseMoveMin : onMouseMoveMinFixeds
     );
     document.removeEventListener("mouseup", onMouseUpMin);
     document.removeEventListener(
       "touchmove",
-      !state.isFixedValues ? onMouseMoveMin : onMouseMoveMinFixeds
+      !isFixedValues ? onMouseMoveMin : onMouseMoveMinFixeds
     );
     document.removeEventListener("touchend", onMouseUpMin);
   };
   const onMouseUpMax = () => {
+    const isFixedValues = optionsRange?.values.length > 2;
+    inputMaxRef.current.className = "";
     document.removeEventListener(
       "mousemove",
-      !state.isFixedValues ? onMouseMoveMax : onMouseMoveMaxFixeds
+      !isFixedValues ? onMouseMoveMax : onMouseMoveMaxFixeds
     );
     document.removeEventListener("mouseup", onMouseUpMax);
     document.removeEventListener(
       "touchmove",
-      !state.isFixedValues ? onMouseMoveMax : onMouseMoveMaxFixeds
+      !isFixedValues ? onMouseMoveMax : onMouseMoveMaxFixeds
     );
     document.removeEventListener("touchend", onMouseUpMax);
   };
   const changeMinValue = (e) => {
+    const isFixedValues = optionsRange?.values.length > 2;
+    inputMinRef.current.className = "font400";
     e.preventDefault();
     document.addEventListener(
       "mousemove",
-      !state.isFixedValues ? onMouseMoveMin : onMouseMoveMinFixeds
+      !isFixedValues ? onMouseMoveMin : onMouseMoveMinFixeds
     );
     document.addEventListener("mouseup", onMouseUpMin);
     document.addEventListener(
       "touchmove",
-      !state.isFixedValues ? onMouseMoveMin : onMouseMoveMinFixeds
+      !isFixedValues ? onMouseMoveMin : onMouseMoveMinFixeds
     );
     document.addEventListener("touchend", onMouseUpMin);
   };
   const changeMaxValue = (e) => {
+    const isFixedValues = optionsRange?.values.length > 2;
+    inputMaxRef.current.className = "font400";
     e.preventDefault();
     document.addEventListener(
       "mousemove",
-      !state.isFixedValues ? onMouseMoveMax : onMouseMoveMaxFixeds
+      !isFixedValues ? onMouseMoveMax : onMouseMoveMaxFixeds
     );
     document.addEventListener("mouseup", onMouseUpMax);
     document.addEventListener(
       "touchmove",
-      !state.isFixedValues ? onMouseMoveMax : onMouseMoveMaxFixeds
+      !isFixedValues ? onMouseMoveMax : onMouseMoveMaxFixeds
     );
     document.addEventListener("touchend", onMouseUpMax);
   };
@@ -283,25 +287,24 @@ const Range = ({ options }) => {
       inputMin,
     });
     if (
-      inputMin >= state.min &&
-      inputMin <= state.currentMax - state.minValueBetween
+      inputMin > state.min &&
+      inputMin < state.currentMax - state.minValueBetween
     ) {
-      setState({ ...state, currentMin: ~~inputMin });
       minValueRef.current.style.width = (inputMin * 100) / state.max + "%";
       inputMinRef.current.value = inputMin;
-    } else if (inputMin <= state.min) {
-      setState({ ...state, currentMin: ~~state.min });
+      setState({ ...state, currentMin: ~~inputMin });
+    } else if (inputMin < state.min) {
       minValueRef.current.style.width = (state.min * 100) / state.max + "%";
       inputMinRef.current.value = state.min;
-    } else if (inputMin >= state.currentMax) {
-      console.log("inputMin >= state.max || inputMin >= state.currentMax");
+      setState({ ...state, currentMin: state.min });
+    } else if (inputMin > state.currentMax - state.minValueBetween) {
+      minValueRef.current.style.width =
+        ((state.currentMax - state.minValueBetween) * 100) / state.max + "%";
+      inputMinRef.current.value = state.currentMax - state.minValueBetween;
       setState({
         ...state,
-        currentMin: ~~state.currentMax - state.minValueBetween,
+        currentMin: Number(state.currentMax - state.minValueBetween),
       });
-      minValueRef.current.style.width =
-        ((~~state.currentMax - state.minValueBetween) * 100) / state.max + "%";
-      inputMinRef.current.value = state.currentMax - state.minValueBetween;
     }
     inputMinRef.current.blur();
   }, 400);
@@ -310,33 +313,33 @@ const Range = ({ options }) => {
     const inputMax = e.target.value;
     setState({ ...state, inputMax });
     if (
-      inputMax >= state.currentMin + state.minValueBetween &&
-      inputMax <= state.max
+      inputMax < state.max &&
+      inputMax > Number(state.currentMin + state.minValueBetween)
     ) {
-      setState({ ...state, currentMax: ~~inputMax });
       maxValueRef.current.style.width = (inputMax * 100) / state.max + "%";
       inputMaxRef.current.value = inputMax;
-    } else if (inputMax <= state.min || inputMax <= state.currentMin) {
-      setState({
-        ...state,
-        currentMax: state.currentMin + state.minValueBetween,
-      });
-      maxValueRef.current.style.width =
-        ((state.currentMin + state.minValueBetween) * 100) / state.max + "%";
-      inputMaxRef.current.value = state.currentMin + state.minValueBetween;
-    } else if (inputMax >= state.max) {
+      setState({ ...state, currentMax: inputMax });
+    } else if (inputMax > state.max) {
       maxValueRef.current.style.width = (state.max * 100) / state.max + "%";
       inputMaxRef.current.value = state.max;
+      setState({
+        ...state,
+        currentMax: state.max,
+      });
+    } else if (inputMax < Number(state.currentMin + state.minValueBetween)) {
+      maxValueRef.current.style.width =
+        (Number(state.currentMin + state.minValueBetween) * 100) / state.max +
+        "%";
+      inputMaxRef.current.value = Number(
+        state.currentMin + state.minValueBetween
+      );
+      setState({
+        ...state,
+        currentMax: Number(state.currentMin + state.minValueBetween),
+      });
     }
     inputMaxRef.current.blur();
   }, 400);
-
-  const maxForMin = () => {
-    return state.currentMax - state.minValueBetween;
-  };
-  const minForMax = () => {
-    return state.currentMin + state.minValueBetween;
-  };
 
   const _handleFocus = (e) => e.target.select();
 
@@ -347,12 +350,10 @@ const Range = ({ options }) => {
           ref={inputMinRef}
           id="min-input"
           type="number"
-          defaultValue={state.inputMin}
-          min={state.min}
-          max={maxForMin()}
+          defaultValue={reload ? state.inputMin : undefined}
           onChange={(e) => setMin(e)}
           onFocus={_handleFocus}
-          disabled={state.isFixedValues}
+          disabled={optionsRange?.values.length > 2}
         />
         <span></span>
       </div>
@@ -361,14 +362,20 @@ const Range = ({ options }) => {
         role="outInputs"
         title="Slider Container">
         <div ref={sliderRef} id="slider">
-          <div ref={minValueRef} id="min" data-content={state.currentMin}>
+          <div
+            ref={minValueRef}
+            id="min"
+            data-content={reload ? state.currentMin : undefined}>
             <div
               ref={minValueDragRef}
               id="min-drag"
               onMouseDown={(e) => changeMinValue(e)}
               onTouchStart={(e) => changeMinValue(e)}></div>
           </div>
-          <div ref={maxValueRef} id="max" data-content={state.currentMax}>
+          <div
+            ref={maxValueRef}
+            id="max"
+            data-content={reload ? state.currentMax : undefined}>
             <div
               ref={maxValueDragRef}
               id="max-drag"
@@ -382,12 +389,10 @@ const Range = ({ options }) => {
           ref={inputMaxRef}
           id="max-input"
           type="number"
-          defaultValue={state.inputMax}
-          min={minForMax()}
-          max={state.max}
+          defaultValue={reload ? state.inputMax : undefined}
           onChange={(e) => setMax(e)}
           onFocus={_handleFocus}
-          disabled={state.isFixedValues}
+          disabled={optionsRange?.values.length > 2}
         />
         <span></span>
       </div>

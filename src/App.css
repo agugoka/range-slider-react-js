@@ -23,6 +23,9 @@ input[type="number"]::-webkit-outer-spin-button {
   -moz-appearance: none;
   margin: 0;
 }
+.font400 {
+  font-family: "MangoSans_400", arial, helvetica, verdana, sans-serif !important;
+}
 .container {
   display: flex;
   justify-content: center;

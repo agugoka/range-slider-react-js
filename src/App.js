@@ -8,15 +8,13 @@ import {
   Navigate,
 } from "react-router-dom";
 import { shortFetch } from "./utils/fetch.utils.js";
-
 import { EXERCISE1, EXERCISE2, BACKEND } from "./routers/router";
-
 import Exercise1 from "./pages/exercise1";
 import Exercise2 from "./pages/exercise2";
+import Nav from './components/Nav/nav';
 
 export default function App() {
   const [fetchData, setFetchData] = useState([]);
-
   useEffect(() => {
     shortFetch({
       url: BACKEND,
@@ -30,10 +28,10 @@ export default function App() {
       },
     });
   }, []);
-
   return (
     <>
       <Router>
+        <Nav />
         <Routes>
           <Route path="/" element={<Navigate replace to={EXERCISE1} />} />
           <Route

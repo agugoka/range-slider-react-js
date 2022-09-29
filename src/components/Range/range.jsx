@@ -293,7 +293,7 @@ const Range = ({ options }) => {
       minValueRef.current.style.width = (inputMin * 100) / state.max + "%";
       inputMinRef.current.value = inputMin;
       setState({ ...state, currentMin: ~~inputMin });
-    } else if (inputMin < state.min) {
+    } else if (inputMin <= state.min ) {
       minValueRef.current.style.width = (state.min * 100) / state.max + "%";
       inputMinRef.current.value = state.min;
       setState({ ...state, currentMin: state.min });
@@ -319,7 +319,7 @@ const Range = ({ options }) => {
       maxValueRef.current.style.width = (inputMax * 100) / state.max + "%";
       inputMaxRef.current.value = inputMax;
       setState({ ...state, currentMax: inputMax });
-    } else if (inputMax > state.max) {
+    } else if (inputMax >= state.max) {
       maxValueRef.current.style.width = (state.max * 100) / state.max + "%";
       inputMaxRef.current.value = state.max;
       setState({
@@ -352,8 +352,11 @@ const Range = ({ options }) => {
           type="number"
           defaultValue={reload ? state.inputMin : undefined}
           onChange={(e) => setMin(e)}
+          onKeyUp={(e) => setMin(e)}
           onFocus={_handleFocus}
           disabled={optionsRange?.values.length > 2}
+          role="input"
+          title="Minimum Value"
         />
         <span></span>
       </div>
@@ -361,7 +364,7 @@ const Range = ({ options }) => {
         className="slider_container"
         role="outInputs"
         title="Slider Container">
-        <div ref={sliderRef} id="slider">
+        <div ref={sliderRef} id="slider" role="slider" title="Slider Range">
           <div
             ref={minValueRef}
             id="min"
@@ -370,7 +373,9 @@ const Range = ({ options }) => {
               ref={minValueDragRef}
               id="min-drag"
               onMouseDown={(e) => changeMinValue(e)}
-              onTouchStart={(e) => changeMinValue(e)}></div>
+              onTouchStart={(e) => changeMinValue(e)}
+              role="dragMin"
+              title="Drag Minimun Value"></div>
           </div>
           <div
             ref={maxValueRef}
@@ -380,7 +385,9 @@ const Range = ({ options }) => {
               ref={maxValueDragRef}
               id="max-drag"
               onMouseDown={(e) => changeMaxValue(e)}
-              onTouchStart={(e) => changeMaxValue(e)}></div>
+              onTouchStart={(e) => changeMaxValue(e)}
+              role="dragMax"
+              title="Drag Maximun Value"></div>
           </div>
         </div>
       </div>
@@ -391,8 +398,11 @@ const Range = ({ options }) => {
           type="number"
           defaultValue={reload ? state.inputMax : undefined}
           onChange={(e) => setMax(e)}
+          onKeyUp={(e) => setMax(e)}
           onFocus={_handleFocus}
           disabled={optionsRange?.values.length > 2}
+          role="input"
+          title="Maximum Value"
         />
         <span></span>
       </div>
